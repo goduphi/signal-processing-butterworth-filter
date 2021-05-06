@@ -22,7 +22,7 @@ plot(f,magDftw0);
 title("DFT Magnitude vs Frequency");
 xlabel("Frequency [Hz]"), ylabel("Magnitude");
 
-% Normalized dft - kinda confused right now.
+% Normalized dft
 normalizedLogPlotDft = 20.*log10(abs(dft)/max(abs(dft)));
 subplot(2, 2, 2);
 plot(f, fftshift(normalizedLogPlotDft));
@@ -37,7 +37,7 @@ delp = -1;                          % 1 - delp (pass band)
 dels = -80;                         % stop band
 
 % Equations
-kp = (1/(convertFromDB(delp))^2) - 1;
+kp = (1/convertFromDB(delp)^2) - 1;
 ks = (1/convertFromDB(dels)^2) - 1;
 
 % Find the order of the butterworth filter
@@ -53,11 +53,11 @@ BigOmegaC = transformBilinearly(ws)/(ks^(1/(2*N)));
 Fc = atan(BigOmegaC/2);
 
 % Logarithmic gain of frequency response of analog filter
-HaS = 20*log10(sqrt(1./(1 + (f/Fc).^(2*N))));
+HaS = 20*log10(sqrt(1./(1+(f/BigOmegaC).^(2*N))));
 subplot(2, 2, 3);
-plot(f,fftshift(abs(HaS)));
-title("Logarithmic gain of frequency response");
-xlabel("Frequency [Hz]"), ylabel("||Ha(s)|");
+semilogx(f,HaS);
+title("Gain vs Frequency");
+xlabel("Frequency [Hz]"), ylabel("||Ha(s)| [dB]");
 
 % 3. Filter implementation
 % ------------------------
@@ -74,11 +74,16 @@ filteredAudio = filter(b,a,sampledData);
 filteredAudioDft = fft(filteredAudio);
 subplot(2, 2, 4);
 plot(f,fftshift(abs(filteredAudioDft)));
-title("Filtered audio DFT Magnitude vs Frequency");
-xlabel("Frequency [Hz]"), ylabel("Magnitude");
+title("Filtered audio");
+xlabel("Frequency [Hz]"), ylabel("Magnitude [dB]");
 
 sound(filteredAudio, Fs);
+
+% The filter did remove the unwanted frequencies
+
 audiowrite("filteredAudio.wav", filteredAudio, Fs);
+
+% Extra credit : Airplane, 1980
 
 % Maps the frequency to angular frequency
 function res = mapTpW(f, Fs)
